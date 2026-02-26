@@ -29,15 +29,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        System.out.println("JWT FILTER HIT → " + request.getRequestURI());
 
-        // If no token → move to next filter
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/api/v1.0/auth/login") ||
+                path.startsWith("/api/v1.0/auth/signup")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: "+authHeader);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7); // remove "Bearer "
+        String token = authHeader.substring(7);
 
         try {
             Claims claims = jwtUtil.getClaims(token);
